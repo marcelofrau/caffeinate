@@ -1,0 +1,9 @@
+// Resource script for Caffeinate.
+// Embed application manifest so Windows treats it as a GUI app (no console).
+//
+// Build with:
+//   go install github.com/akavel/rsrc@latest
+//   rsrc -manifest caffeinate.manifest -o rsrc.syso
+//
+// The .syso file is automatically picked up by `go build`.
+

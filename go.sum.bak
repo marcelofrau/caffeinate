@@ -1,0 +1,15 @@
+github.com/getlantern/context v0.0.0-20220418194847-b3bf12bf6d8f h1:A1OJyy8Pyu9VWEYBdC2pAFJP91PFYH1OJnYK9KWQM5I=
+github.com/getlantern/context v0.0.0-20220418194847-b3bf12bf6d8f/go.mod h1:ylD8M7UGnS+gCT25nnIaHwacCWJFYn8csUDaVhFEXI0=
+github.com/getlantern/errors v1.0.1 h1:GPBs5m8EcRsRD1fDuBHzHqGhFIJMQ+x7+BIyYqXQWi4=
+github.com/getlantern/errors v1.0.1/go.mod h1:Ct1LRCjjV5Y+o9j3BCQxaNz9n+0UJJgHn3w+D+bDSXY=
+github.com/getlantern/golog v0.0.0-20211223150227-d4d95a44d873 h1:oKrRzZaZxUgD0H1ZGtMdGNZhRfmE12l/AiV5qGjJErs=
+github.com/getlantern/golog v0.0.0-20211223150227-d4d95a44d873/go.mod h1:yjt7BWbOzRGBwWdQMVMm4tIaFGOE9ZsqnrB1k3PEIW8=
+github.com/getlantern/hex v0.0.0-20190417191902-c6586a6fe0b7 h1:micT5vkcQ2uiDHRDaDs/m6Xi8EZkHFHLquMvGrwXZL8=
+github.com/getlantern/hex v0.0.0-20190417191902-c6586a6fe0b7/go.mod h1:sBpNsHdmjW25aRKB/jlGnYWHtAm3XLGA5GH7zBIE3eU=
+github.com/getlantern/ops v0.0.0-20200403153110-8476b16edcd6 h1:IHGPtR2etg8vVJGF2BEFkIY4VSarIdVuSSYAkfnU7K8=
+github.com/getlantern/ops v0.0.0-20200403153110-8476b16edcd6/go.mod h1:D5ao98qkA6pxftxoqzibIBdFkIRtX3/f3sTHi6lxm74=
+github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
+github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
+github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c h1:rp5dCmg/yLR3mgFuSOe3omTITg4yDmFHzD27M4FKBGQ=
+github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c/go.mod h1:X07ZCGwUV7j6m6RMzlGCacDZPmSBKPLqnp8R/MXBKHU=
+golang.org/x/sys v0.22.0/go.mod h1:/VUhepiaJMbbeZIIzcGqYyhAIqx1skpEktyJ2lSBFqU=
