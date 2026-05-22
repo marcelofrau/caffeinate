@@ -26,13 +26,13 @@ func onReady() {
 	j := jiggler.New()
 
 	// ── Menu items ──────────────────────────────────────────────────
-	mEnable := systray.AddMenuItemCheckbox("Enable Jiggle", "Start keeping the system awake", false)
-	mZen := systray.AddMenuItemCheckbox("☯  Ghost Sip  (Zen Jiggle)", "Invisible micro-movement — cursor stays put", false)
-	mZen.Disable() // only usable when jiggle is enabled
+	mEnable := systray.AddMenuItemCheckbox("☕ Enable Jiggle", "Start keeping the system awake", false)
+	mGhost := systray.AddMenuItemCheckbox("👻 Ghost Sip", "Invisible micro-movement — cursor stays put", false)
+	mGhost.Disable() // only usable when jiggle is enabled
 
 	systray.AddSeparator()
 
-	mQuit := systray.AddMenuItem("Quit", "Exit Caffeinate")
+	mQuit := systray.AddMenuItem("Exit", "Close Caffeinate")
 
 	// ── Event loop ──────────────────────────────────────────────────
 	go func() {
@@ -43,21 +43,21 @@ func onReady() {
 				if mEnable.Checked() {
 					mEnable.Uncheck()
 					j.SetEnabled(false)
-					mZen.Disable()
+					mGhost.Disable()
 					systray.SetTooltip(appTooltip)
 				} else {
 					mEnable.Check()
 					j.SetEnabled(true)
-					mZen.Enable()
+					mGhost.Enable()
 					systray.SetTooltip(appName + " — Active ☕")
 				}
 
-			case <-mZen.ClickedCh:
-				if mZen.Checked() {
-					mZen.Uncheck()
+			case <-mGhost.ClickedCh:
+				if mGhost.Checked() {
+					mGhost.Uncheck()
 					j.SetZen(false)
 				} else {
-					mZen.Check()
+					mGhost.Check()
 					j.SetZen(true)
 				}
 

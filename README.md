@@ -22,10 +22,10 @@ It lives quietly in the system tray as a coffee cup icon and gets out of your wa
 ## 🎨 Tray Menu
 
 ```
-[✓] Enable Jiggle
-[ ] ☯  Ghost Sip  (Zen Jiggle)    ← only active when Jiggle is enabled
+[✓] ☕ Enable Jiggle
+[ ] 👻 Ghost Sip                    ← only active when Jiggle is enabled
 ────────────────────────────────
-    Quit
+    Exit
 ```
 
 Both left-click and right-click on the tray icon open the menu.
