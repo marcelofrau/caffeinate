@@ -36,8 +36,18 @@ Both left-click and right-click on the tray icon open the menu.
 
 - Go 1.21+
 - Windows target (cross-compile from Linux/macOS is fine)
+- **rsrc** (for no-console window + exe icon) — install with: `go install github.com/akavel/rsrc@latest`
 
 ### Quick build (PowerShell on Windows)
+
+**Recommended** (with manifest & icon embedded):
+
+```powershell
+go install github.com/akavel/rsrc@latest
+.\build.ps1
+```
+
+**Alternative** (minimal build, console may flash):
 
 ```powershell
 .\build.ps1
@@ -45,23 +55,20 @@ Both left-click and right-click on the tray icon open the menu.
 
 ### Cross-compile from Linux/macOS
 
+**Recommended** (with manifest & icon embedded):
+
 ```bash
+go install github.com/akavel/rsrc@latest
 make build
 ```
 
-This produces `caffeinate.exe` — a standalone binary with no dependencies.
+**Alternative** (minimal build):
 
-### Suppress console window (recommended)
-
-The `-H windowsgui` linker flag is already set in both `build.ps1` and the `Makefile`.
-
-To also embed the application manifest (proper DPI awareness, no UAC prompt):
-
-```powershell
-go install github.com/akavel/rsrc@latest
-rsrc -manifest cmd/caffeinate/caffeinate.manifest -o cmd/caffeinate/rsrc.syso
-.\build.ps1
+```bash
+CGO_ENABLED=0 go build -ldflags="-H windowsgui -s -w" -o dist/caffeinate.exe ./cmd/caffeinate
 ```
+
+This produces `caffeinate.exe` — a standalone binary with no dependencies.
 
 ## 🚀 Run on startup (optional)
 

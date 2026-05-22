@@ -1,0 +1,10 @@
+// caffeinate.rc — Windows resource file for icon and manifest
+
+#define RT_MANIFEST 24
+#define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
+
+// Application icon
+IDI_ICON1 ICON "../../icon/app_icon.ico"
+
+// Manifest
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "caffeinate.manifest"

@@ -15,14 +15,14 @@ $ErrorActionPreference = "Stop"
 Write-Host "==> Downloading dependencies..." -ForegroundColor Cyan
 go mod tidy
 
-# Embed manifest if rsrc is available
+# Embed manifest and icon if rsrc is available
 $rsrc = Get-Command rsrc -ErrorAction SilentlyContinue
 if ($rsrc) {
-    Write-Host "==> Embedding manifest with rsrc..." -ForegroundColor Cyan
-    rsrc -manifest cmd/caffeinate/caffeinate.manifest -o cmd/caffeinate/rsrc.syso
+    Write-Host "==> Embedding manifest and icon with rsrc..." -ForegroundColor Cyan
+    rsrc -manifest cmd/caffeinate/caffeinate.manifest -ico icon/app_icon.ico -o cmd/caffeinate/rsrc.syso
 }
 else {
-    Write-Host "    rsrc not found — skipping manifest embedding (console window may flash)." -ForegroundColor Yellow
+    Write-Host "    rsrc not found — skipping resource embedding (console may flash, no exe icon)." -ForegroundColor Yellow
     Write-Host "    Install with: go install github.com/akavel/rsrc@latest" -ForegroundColor Yellow
 }
 
