@@ -1,6 +1,6 @@
 # ☕ Caffeinate
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://golang.org)
 [![Windows](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows)](https://www.microsoft.com/windows)
 [![Standalone Binary](https://img.shields.io/badge/Binary-Standalone-green)]()
@@ -13,7 +13,7 @@ It lives quietly in the system tray as a coffee cup icon and gets out of your wa
 | Feature | Description |
 |---|---|
 | **Enable Jiggle** | Periodically moves the mouse a few pixels to reset the system idle timer |
-| **☯ Ghost Sip (Zen Jiggle)** | Micro-movement mode: cursor moves 1px and snaps back instantly — visually invisible |
+| **Ghost Sip** | Micro-movement mode: cursor moves 1px and snaps back instantly — visually invisible |
 | **Random interval** | Jiggle fires every 25–35 seconds (randomised) to avoid mechanical detection patterns |
 | **No console window** | Pure tray app, zero UI chrome |
 | **Single static binary** | No installer, no runtime dependencies |
@@ -79,7 +79,7 @@ This produces `caffeinate.exe` — a standalone binary with no dependencies.
 
 - Uses `SendInput` (Win32 API) with `MOUSEEVENTF_MOVE` and relative deltas.
 - **Normal mode**: ±5px diagonal nudge, 200 ms apart.
-- **Ghost Sip / Zen mode**: +1px, 50 ms pause, −1px. Cursor visually stays put.
+- **Ghost Sip mode**: +1px, 50 ms pause, −1px. Cursor visually stays put.
 - Interval between jiggle cycles is randomised (25–35 s) to avoid clock-perfect patterns that monitoring software can flag.
 - No registry writes, no background services, no elevated privileges required.
 
@@ -89,7 +89,7 @@ The application icon was designed by [Icons8](https://icons8.com) and is license
 
 ## 📄 License
 
-MIT — See [LICENSE](LICENSE) file for details.
+GPL v3 — See [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
