@@ -14,6 +14,15 @@ import (
 var (
 	user32        = windows.NewLazySystemDLL("user32.dll")
 	procSendInput = user32.NewProc("SendInput")
+
+	kernel32                   = windows.NewLazySystemDLL("kernel32.dll")
+	procSetThreadExecutionState = kernel32.NewProc("SetThreadExecutionState")
+)
+
+const (
+	esContinuous      = 0x80000000
+	esSystemRequired  = 0x00000001
+	esDisplayRequired = 0x00000002
 )
 
 // MOUSEINPUT mirrors the Win32 MOUSEINPUT structure.
@@ -62,9 +71,11 @@ func (j *Jiggler) SetEnabled(enabled bool) {
 	j.enabled = enabled
 
 	if enabled {
+		setExecState(esContinuous | esSystemRequired | esDisplayRequired)
 		j.stop = make(chan struct{})
 		go j.loop(j.stop)
 	} else {
+		setExecState(esContinuous) // release requirements
 		close(j.stop)
 		j.stop = nil
 	}
@@ -126,6 +137,10 @@ func (j *Jiggler) doNormal() {
 	sendRelative(5, 5)
 	time.Sleep(200 * time.Millisecond)
 	sendRelative(-5, -5)
+}
+
+func setExecState(state uint32) {
+	procSetThreadExecutionState.Call(uintptr(state))
 }
 
 func sendRelative(dx, dy int32) {
