@@ -40,6 +40,7 @@ var (
 	procCreateIconFromResource = user32.NewProc("CreateIconFromResource")
 	procGetModuleHandleW       = kernel32.NewProc("GetModuleHandleW")
 	procShellNotifyIconW       = shell32.NewProc("Shell_NotifyIconW")
+	procMessageBoxW            = user32.NewProc("MessageBoxW")
 )
 
 const (
@@ -73,6 +74,7 @@ const (
 	IDM_ENABLE = 1
 	IDM_GHOST  = 2
 	IDM_EXIT   = 3
+	IDM_ABOUT  = 4
 )
 
 type wndClassEx struct {
@@ -236,7 +238,7 @@ func wndProc(hwnd uintptr, msg uint32, wParam, lParam uintptr) uintptr {
 			jigglOn = !jigglOn
 			appJiggle.SetEnabled(jigglOn)
 			if jigglOn {
-				setTooltip("Caffeinate — Active ☕")
+				setTooltip("Caffeinate — Active")
 			} else {
 				setTooltip("Caffeinate — Keep your machine awake")
 			}
@@ -244,6 +246,15 @@ func wndProc(hwnd uintptr, msg uint32, wParam, lParam uintptr) uintptr {
 		case IDM_GHOST:
 			ghostOn = !ghostOn
 			appJiggle.SetZen(ghostOn)
+
+		case IDM_ABOUT:
+			title, _ := windows.UTF16PtrFromString("About Caffeinate")
+			msg, _ := windows.UTF16PtrFromString(
+				"Caffeinate v1.0.2\n\nA lightweight Windows utility that keeps your machine awake.\n\n" +
+					"Prevents sleep, screensaver, and 'Away' status in communication apps.\n\n" +
+					"https://github.com/marcelobarbieri/caffeinate",
+			)
+			procMessageBoxW.Call(hwnd, uintptr(unsafe.Pointer(msg)), uintptr(unsafe.Pointer(title)), 0)
 
 		case IDM_EXIT:
 			procDestroyWindow.Call(hwnd)
@@ -264,8 +275,10 @@ func showMenu(hwnd uintptr) {
 
 	item := func(s string) *uint16 { p, _ := windows.UTF16PtrFromString(s); return p }
 
-	procAppendMenuW.Call(hMenu, MF_STRING, IDM_ENABLE, uintptr(unsafe.Pointer(item("☕ Enable Jiggle"))))
-	procAppendMenuW.Call(hMenu, MF_STRING, IDM_GHOST, uintptr(unsafe.Pointer(item("👻 Ghost Sip"))))
+	procAppendMenuW.Call(hMenu, MF_STRING, IDM_ENABLE, uintptr(unsafe.Pointer(item("Enable Jiggle"))))
+	procAppendMenuW.Call(hMenu, MF_STRING, IDM_GHOST, uintptr(unsafe.Pointer(item("Ghost Sip"))))
+	procAppendMenuW.Call(hMenu, MF_SEPARATOR, 0, 0)
+	procAppendMenuW.Call(hMenu, MF_STRING, IDM_ABOUT, uintptr(unsafe.Pointer(item("About Caffeinate..."))))
 	procAppendMenuW.Call(hMenu, MF_SEPARATOR, 0, 0)
 	procAppendMenuW.Call(hMenu, MF_STRING, IDM_EXIT, uintptr(unsafe.Pointer(item("Exit"))))
 
