@@ -25,6 +25,34 @@ const (
 	esDisplayRequired = 0x00000002
 )
 
+// KEYBDINPUT mirrors the Win32 KEYBDINPUT structure.
+type keybdInput struct {
+	wVk      uint16
+	wScan    uint16
+	dwFlags  uint32
+	time     uint32
+	dwExtraInfo uintptr
+}
+
+// INPUT wrapper for keyboard events (same total size as mouse input).
+type inputKeyboard struct {
+	inputType uint32
+	_         [4]byte
+	ki        keybdInput
+	_         [16]byte
+}
+
+const (
+	inputMouse      = 0
+	mouseeventfMove = 0x0001
+
+	inputTypeKeyboard = 1
+	keyeventfKeyUp   = 0x0002
+
+	vkLCtrl = 0xA2
+	vkLShift = 0xA0
+)
+
 // MOUSEINPUT mirrors the Win32 MOUSEINPUT structure.
 type mouseInput struct {
 	dx          int32
@@ -42,17 +70,15 @@ type input struct {
 	_         [8]byte // padding to match union size on amd64
 }
 
-const (
-	inputMouse      = 0
-	mouseeventfMove = 0x0001
-)
+var jiggleKeys = [...]uint16{vkLCtrl, vkLShift}
 
 // Jiggler manages the mouse movement goroutine.
 type Jiggler struct {
-	mu      sync.Mutex
-	enabled bool
-	zen     bool
-	stop    chan struct{}
+	mu       sync.Mutex
+	enabled  bool
+	zen      bool
+	stop     chan struct{}
+	keyIndex int
 }
 
 // New creates a new Jiggler (initially disabled).
@@ -130,6 +156,7 @@ func (j *Jiggler) doZen() {
 	sendRelative(1, 0)
 	time.Sleep(50 * time.Millisecond)
 	sendRelative(-1, 0)
+	j.sendModifier()
 }
 
 // doNormal performs a small visible nudge (5px diagonal) and returns.
@@ -137,6 +164,13 @@ func (j *Jiggler) doNormal() {
 	sendRelative(5, 5)
 	time.Sleep(200 * time.Millisecond)
 	sendRelative(-5, -5)
+	j.sendModifier()
+}
+
+func (j *Jiggler) sendModifier() {
+	vk := jiggleKeys[j.keyIndex%len(jiggleKeys)]
+	j.keyIndex++
+	sendKey(vk)
 }
 
 func setExecState(state uint32) {
@@ -152,6 +186,26 @@ func sendRelative(dx, dy int32) {
 			dwFlags: mouseeventfMove,
 		},
 	}
+	procSendInput.Call(
+		1,
+		uintptr(unsafe.Pointer(&inp)),
+		unsafe.Sizeof(inp),
+	)
+}
+
+func sendKey(vk uint16) {
+	inp := inputKeyboard{
+		inputType: inputTypeKeyboard,
+		ki: keybdInput{
+			wVk: vk,
+		},
+	}
+	procSendInput.Call(
+		1,
+		uintptr(unsafe.Pointer(&inp)),
+		unsafe.Sizeof(inp),
+	)
+	inp.ki.dwFlags = keyeventfKeyUp
 	procSendInput.Call(
 		1,
 		uintptr(unsafe.Pointer(&inp)),
