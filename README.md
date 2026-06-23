@@ -15,8 +15,8 @@ It lives quietly in the system tray as a coffee cup icon and gets out of your wa
 
 | Feature | Description |
 |---|---|
-| **Enable Jiggle** | Periodically moves the mouse and sends a synthetic modifier keypress to reset the system idle timer |
-| **Ghost Sip** | Micro-movement mode: cursor moves 1px and snaps back instantly — visually invisible |
+| **Enable Jiggle** | Periodically moves the mouse to reset the system idle timer |
+| **Ghost Sip** | Zero-delta mouse move (`dx=0, dy=0`) — cursor never moves, idle timer resets |
 | **Random interval** | Jiggle fires every 25–35 seconds (randomised) to avoid mechanical detection patterns |
 | **No console window** | Pure Win32 tray app, zero UI chrome |
 | **Single static binary** | No installer, no runtime dependencies |
@@ -67,12 +67,12 @@ Windows has two separate timers that communication apps (Teams, Slack, Zoom) mon
 | Timer | Controlled by | Reset by |
 |-------|--------------|----------|
 | **Power timer** | `SetThreadExecutionState(ES_SYSTEM_REQUIRED \| ES_DISPLAY_REQUIRED)` | Prevents sleep and display-off |
-| **Idle timer** | `GetLastInputInfo()` | Physical input OR `SendInput` with `INPUT_KEYBOARD` / mouse button events — **NOT** `MOUSEEVENTF_MOVE` alone |
+| **Idle timer** | `GetLastInputInfo()` | Any `SendInput` event including `MOUSEEVENTF_MOVE` |
 
 Caffeinate handles **both**:
 
 - `SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_CONTINUOUS)` keeps the power timer satisfied — no sleep, no display off.
-- Each jiggle cycle also sends a synthetic modifier key press (`SendInput` with `INPUT_KEYBOARD`, alternating Left Ctrl / Left Shift), which properly resets the idle timer so communication apps never see the user as Away.
+- Each jiggle cycle sends a `SendInput(MOUSEEVENTF_MOVE)` event (zero-delta in Ghost Sip mode, ±5px in Normal mode), which resets the idle timer so communication apps never see the user as Away.
 - **Normal mode**: ±5px diagonal nudge, 200 ms apart.
 - **Ghost Sip mode**: zero-delta mouse move (`dx=0, dy=0`). Windows registers the input event and resets the idle timer; cursor never moves at all. Same technique used by ArkaneSystems MouseJiggler.
 - Interval between jiggle cycles is randomised (25–35 s) to avoid clock-perfect patterns that monitoring software can flag.
