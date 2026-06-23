@@ -12,10 +12,9 @@ import (
 )
 
 var (
-	user32        = windows.NewLazySystemDLL("user32.dll")
-	procSendInput = user32.NewProc("SendInput")
-
-	kernel32                   = windows.NewLazySystemDLL("kernel32.dll")
+	user32                      = windows.NewLazySystemDLL("user32.dll")
+	procSendInput               = user32.NewProc("SendInput")
+	kernel32                    = windows.NewLazySystemDLL("kernel32.dll")
 	procSetThreadExecutionState = kernel32.NewProc("SetThreadExecutionState")
 )
 
@@ -23,34 +22,9 @@ const (
 	esContinuous      = 0x80000000
 	esSystemRequired  = 0x00000001
 	esDisplayRequired = 0x00000002
-)
 
-// KEYBDINPUT mirrors the Win32 KEYBDINPUT structure.
-type keybdInput struct {
-	wVk      uint16
-	wScan    uint16
-	dwFlags  uint32
-	time     uint32
-	dwExtraInfo uintptr
-}
-
-// INPUT wrapper for keyboard events (same total size as mouse input).
-type inputKeyboard struct {
-	inputType uint32
-	_         [4]byte
-	ki        keybdInput
-	_         [16]byte
-}
-
-const (
 	inputMouse      = 0
 	mouseeventfMove = 0x0001
-
-	inputTypeKeyboard = 1
-	keyeventfKeyUp   = 0x0002
-
-	vkLCtrl = 0xA2
-	vkLShift = 0xA0
 )
 
 // MOUSEINPUT mirrors the Win32 MOUSEINPUT structure.
@@ -64,21 +38,23 @@ type mouseInput struct {
 }
 
 // INPUT mirrors the Win32 INPUT structure (type=mouse).
+// Win32 INPUT on amd64: DWORD type (4) + 4-byte pad + 32-byte union = 40 bytes total.
+// MOUSEINPUT is 32 bytes, exactly filling the union slot — no trailing pad needed.
 type input struct {
 	inputType uint32
+	_         [4]byte // pad: align union to 8-byte boundary
 	mi        mouseInput
-	_         [8]byte // padding to match union size on amd64
 }
 
-var jiggleKeys = [...]uint16{vkLCtrl, vkLShift}
+// Compile-time size assertion: Win32 INPUT must be exactly 40 bytes on amd64.
+var _ [40]byte = [unsafe.Sizeof(input{})]byte{}
 
 // Jiggler manages the mouse movement goroutine.
 type Jiggler struct {
-	mu       sync.Mutex
-	enabled  bool
-	zen      bool
-	stop     chan struct{}
-	keyIndex int
+	mu      sync.Mutex
+	enabled bool
+	zen     bool
+	stop    chan struct{}
 }
 
 // New creates a new Jiggler (initially disabled).
@@ -107,7 +83,7 @@ func (j *Jiggler) SetEnabled(enabled bool) {
 	}
 }
 
-// SetZen toggles zen mode (micro-movement, invisible to user).
+// SetZen toggles zen mode (zero-delta move — cursor stays put, idle timer resets).
 func (j *Jiggler) SetZen(zen bool) {
 	j.mu.Lock()
 	defer j.mu.Unlock()
@@ -144,40 +120,32 @@ func (j *Jiggler) loop(stop <-chan struct{}) {
 		j.mu.Unlock()
 
 		if zen {
-			j.doZen()
+			doZen()
 		} else {
-			j.doNormal()
+			doNormal()
 		}
 	}
 }
 
-// doZen performs a 1px move and immediately reverses — cursor stays put visually.
-func (j *Jiggler) doZen() {
-	sendRelative(1, 0)
-	time.Sleep(50 * time.Millisecond)
-	sendRelative(-1, 0)
-	j.sendModifier()
+// doZen fires a zero-delta mouse move event.
+// The cursor stays put visually; Windows still registers the input and resets
+// GetLastInputInfo — the same technique used by ArkaneSystems MouseJiggler.
+func doZen() {
+	sendMouseMove(0, 0)
 }
 
 // doNormal performs a small visible nudge (5px diagonal) and returns.
-func (j *Jiggler) doNormal() {
-	sendRelative(5, 5)
+func doNormal() {
+	sendMouseMove(5, 5)
 	time.Sleep(200 * time.Millisecond)
-	sendRelative(-5, -5)
-	j.sendModifier()
-}
-
-func (j *Jiggler) sendModifier() {
-	vk := jiggleKeys[j.keyIndex%len(jiggleKeys)]
-	j.keyIndex++
-	sendKey(vk)
+	sendMouseMove(-5, -5)
 }
 
 func setExecState(state uint32) {
 	procSetThreadExecutionState.Call(uintptr(state))
 }
 
-func sendRelative(dx, dy int32) {
+func sendMouseMove(dx, dy int32) {
 	inp := input{
 		inputType: inputMouse,
 		mi: mouseInput{
@@ -186,26 +154,6 @@ func sendRelative(dx, dy int32) {
 			dwFlags: mouseeventfMove,
 		},
 	}
-	procSendInput.Call(
-		1,
-		uintptr(unsafe.Pointer(&inp)),
-		unsafe.Sizeof(inp),
-	)
-}
-
-func sendKey(vk uint16) {
-	inp := inputKeyboard{
-		inputType: inputTypeKeyboard,
-		ki: keybdInput{
-			wVk: vk,
-		},
-	}
-	procSendInput.Call(
-		1,
-		uintptr(unsafe.Pointer(&inp)),
-		unsafe.Sizeof(inp),
-	)
-	inp.ki.dwFlags = keyeventfKeyUp
 	procSendInput.Call(
 		1,
 		uintptr(unsafe.Pointer(&inp)),

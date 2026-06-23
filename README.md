@@ -3,8 +3,8 @@
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://golang.org)
 [![Windows](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows)](https://www.microsoft.com/windows)
+[![Release](https://img.shields.io/badge/Release-v1.0.4-brightgreen)](https://github.com/marcelobarbieri/caffeinate/releases)
 [![Standalone Binary](https://img.shields.io/badge/Binary-Standalone-green)]()
-[![Windows Only](https://img.shields.io/badge/OS-Windows%20Only-blue)]()
 
 > ⚠️ **Windows only.** This app uses native Win32 APIs (`user32.dll`, `kernel32.dll`, `shell32.dll`) and is not cross-platform.
 
@@ -15,7 +15,7 @@ It lives quietly in the system tray as a coffee cup icon and gets out of your wa
 
 | Feature | Description |
 |---|---|
-| **Enable Jiggle** | Periodically moves the mouse a few pixels to reset the system idle timer |
+| **Enable Jiggle** | Periodically moves the mouse and sends a synthetic modifier keypress to reset the system idle timer |
 | **Ghost Sip** | Micro-movement mode: cursor moves 1px and snaps back instantly — visually invisible |
 | **Random interval** | Jiggle fires every 25–35 seconds (randomised) to avoid mechanical detection patterns |
 | **No console window** | Pure Win32 tray app, zero UI chrome |
@@ -28,6 +28,8 @@ It lives quietly in the system tray as a coffee cup icon and gets out of your wa
 ```
 [✓] ☕ Enable Jiggle
 [ ] 👻 Ghost Sip                    ← only active when Jiggle is enabled
+────────────────────────────────
+    About Caffeinate...
 ────────────────────────────────
     Exit
 ```
@@ -60,10 +62,19 @@ This produces `dist/caffeinate.exe` — a standalone binary with no dependencies
 
 ## 📖 How it works
 
-- Uses `SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED)` to tell Windows to stay awake — no sleep, no display off.
-- Also moves the mouse periodically via `SendInput` with `MOUSEEVENTF_MOVE` as a visual indicator and to prevent "Away" status on communication apps.
+Windows has two separate timers that communication apps (Teams, Slack, Zoom) monitor:
+
+| Timer | Controlled by | Reset by |
+|-------|--------------|----------|
+| **Power timer** | `SetThreadExecutionState(ES_SYSTEM_REQUIRED \| ES_DISPLAY_REQUIRED)` | Prevents sleep and display-off |
+| **Idle timer** | `GetLastInputInfo()` | Physical input OR `SendInput` with `INPUT_KEYBOARD` / mouse button events — **NOT** `MOUSEEVENTF_MOVE` alone |
+
+Caffeinate handles **both**:
+
+- `SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_CONTINUOUS)` keeps the power timer satisfied — no sleep, no display off.
+- Each jiggle cycle also sends a synthetic modifier key press (`SendInput` with `INPUT_KEYBOARD`, alternating Left Ctrl / Left Shift), which properly resets the idle timer so communication apps never see the user as Away.
 - **Normal mode**: ±5px diagonal nudge, 200 ms apart.
-- **Ghost Sip mode**: +1px, 50 ms pause, −1px. Cursor visually stays put.
+- **Ghost Sip mode**: zero-delta mouse move (`dx=0, dy=0`). Windows registers the input event and resets the idle timer; cursor never moves at all. Same technique used by ArkaneSystems MouseJiggler.
 - Interval between jiggle cycles is randomised (25–35 s) to avoid clock-perfect patterns that monitoring software can flag.
 - Pure Win32 tray implementation — no external libraries, no IPC, fast startup.
 - No registry writes, no background services, no elevated privileges required.

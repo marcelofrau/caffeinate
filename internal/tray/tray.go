@@ -250,7 +250,7 @@ func wndProc(hwnd uintptr, msg uint32, wParam, lParam uintptr) uintptr {
 		case IDM_ABOUT:
 			title, _ := windows.UTF16PtrFromString("About Caffeinate")
 			msg, _ := windows.UTF16PtrFromString(
-				"Caffeinate v1.0.2\n\nA lightweight Windows utility that keeps your machine awake.\n\n" +
+				"Caffeinate v1.0.4\n\nA lightweight Windows utility that keeps your machine awake.\n\n" +
 					"Prevents sleep, screensaver, and 'Away' status in communication apps.\n\n" +
 					"https://github.com/marcelobarbieri/caffeinate",
 			)
